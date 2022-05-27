@@ -1,7 +1,8 @@
 from flask import request
 from flask_restx import Resource, Namespace
 from dao.model.director import DirectorSchema
-from implemented import director_service
+from helpers.decorators import auth_required, admin_required
+from helpers.implemented import director_service
 
 directors_ns = Namespace('directors')
 
@@ -11,10 +12,12 @@ directors_schema = DirectorSchema(many=True)
 
 @directors_ns.route('/')
 class DirectorsView(Resource):
+    @auth_required
     def get(self):
         director = director_service.get_all()
         return directors_schema.dump(director), 200
 
+    @admin_required
     def post(self):
         data = request.get_json()
         director_service.create(data)
@@ -23,10 +26,12 @@ class DirectorsView(Resource):
 
 @directors_ns.route("/<int:did>")
 class DirectorView(Resource):
+    @auth_required
     def get(self, did):
         director = director_service.get_one(did)
         return director_schema.dump(director), 200
 
+    @admin_required
     def put(self, did):
         data = request.get_json()
         data['id'] = did
@@ -35,6 +40,7 @@ class DirectorView(Resource):
 
         return "Успешно обновлено"
 
+    @admin_required
     def delete(self, did):
         director_service.delete(did)
 
